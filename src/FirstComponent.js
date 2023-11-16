@@ -18,7 +18,6 @@ export default function FirstComponent() {
     });
     const [showChart, setShowChart] = useState(false);
 
-    console.log('chartData==>',chartData)
     useEffect(() => {
         setChartData({
             labels: enteredData.map((entry, index) => labelsforChart[index]),
@@ -55,18 +54,19 @@ export default function FirstComponent() {
 
     const handlePlotGraph = () => {
 
-        // if (enteredData.length > 0) {
+        if (enteredData.length > 0) {
 
-        //     setChartData({
-        //         labels: enteredData.map((entry, index) => `Entry ${index + 1}`),
-        //         datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
-        //     });
-        // }
+            setChartData({
+                labels: enteredData.map((entry, index) => `Entry ${index + 1}`),
+                datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
+            });
+        }
     };
 
     const renderTable = () => {
         return (
-            <Table style={viewStyles.tableContainer}>
+
+            <Table>
                 <Row data={chartData.labels} />
                 <Row data={chartData.datasets[0].data} />
             </Table>
@@ -104,22 +104,23 @@ export default function FirstComponent() {
                 onSubmitEditing={handleSubmit}
                 keyboardType="numeric"
                 blurOnSubmit={false}
+                placeholder="Enter Numeric Data"
             />
             {enteredData.length > 0 && (
                 <View style={viewStyles.tableContainer}>
                     {renderTable()}
                 </View>
             )}
-            {/* {enteredData.length > 0 && (
+            {enteredData.length > 0 && (
                 <Button title="Plot Graph"
                     // onPress={handlePlotGraph} 
                     onPress={() => { handlePlotGraph(); setShowChart(true) }}
                 />
-            )} */}
-            <Button title="get Data" onPress={_retrieveData} />
+            )}
+            {/* <Button title="get Data" onPress={_retrieveData} /> */}
             {/* <Button title="Delete Data" onPress={() => {SecureStore.deleteItemAsync("enteredData")}}/> */}
 
-            {/* {showChart && */}
+            {showChart &&
 
                 <View>
                     <Text style={viewStyles.text}>Line Chart</Text>
@@ -169,13 +170,14 @@ export default function FirstComponent() {
                     />
 
                 </View>
-            {/* } */}
+            } 
         </View>
     );
 }
 
 const viewStyles = StyleSheet.create({
     container: {
+        width : "100%",
         backgroundColor: '#fafafa',
         padding: 5,
         margin: 5,
@@ -191,7 +193,7 @@ const viewStyles = StyleSheet.create({
     },
     tableContainer: {
         marginTop: 10,
-        marginLeft: 3,
+        margin: 5,
     },
     text: {
         fontWeight: 'bold',
