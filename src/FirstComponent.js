@@ -5,11 +5,10 @@ import { LineChart } from "react-native-chart-kit";
 import { Table, Row } from 'react-native-table-component';
 // import SQLite from 'react-native-sqlite-2';
 import * as SecureStore from 'expo-secure-store';
-import { endEvent } from "react-native/Libraries/Performance/Systrace";
 
 export default function FirstComponent() {
 
-    const labelsforChart = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "November", "December"]
+    const labelsforChart = ["Jan", "Feb", "March", "April", "May", "June", "July", "August", "September", "November", "December"]
 
     const [userInput, setUserInput] = useState("");
     const [enteredData, setEnteredData] = useState([]);
@@ -19,7 +18,7 @@ export default function FirstComponent() {
     });
     const [showChart, setShowChart] = useState(false);
 
-
+    console.log('chartData==>',chartData)
     useEffect(() => {
         setChartData({
             labels: enteredData.map((entry, index) => labelsforChart[index]),
@@ -45,11 +44,13 @@ export default function FirstComponent() {
         }
         // Update enteredData and clear userInput
         setEnteredData([...enteredData, userInput]);
+        // _storeData(); 
+        // _retrieveData()
         setUserInput("");
 
         // Saving enteredData to AsyncStorage
         // AsyncStorage.setItem("enteredData", JSON.stringify([...enteredData, userInput])); 
-        _storeData(userInput);
+        _storeData();
     };
 
     const handlePlotGraph = () => {
@@ -72,7 +73,7 @@ export default function FirstComponent() {
         );
     };
 
-    const _storeData = async (userInput) => {
+    const _storeData = async () => {
         try {
             await SecureStore.setItemAsync("enteredData", JSON.stringify([...enteredData, userInput]))
         } catch (error) {
@@ -84,9 +85,9 @@ export default function FirstComponent() {
         try {
             const value = await SecureStore.getItemAsync("enteredData");
             if (value !== null) {
+                // setEnteredData([...enteredData, value])
                 console.log(value)
-                setEnteredData([...enteredData, value])
-                return value;
+                // return value;
             }
         } catch (error) {
             console.log("Error retrieving data", error)
@@ -116,56 +117,58 @@ export default function FirstComponent() {
                 />
             )} */}
             <Button title="get Data" onPress={_retrieveData} />
+            {/* <Button title="Delete Data" onPress={() => {SecureStore.deleteItemAsync("enteredData")}}/> */}
+
             {/* {showChart && */}
-            <Text style={viewStyles.text}>Line Chart</Text>
-            <View>
 
-                <LineChart
-                    // data={chartData}
-                    data={{
-                        labels: ["January", "February", "March", "April", "May", "June"],
-                        datasets: [
-                            {
-                                data: [
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100,
-                                    Math.random() * 100
-                                ]
+                <View>
+                    <Text style={viewStyles.text}>Line Chart</Text>
+                    <LineChart
+                        data={chartData}
+                        // data={{
+                        //     labels: ["January", "February", "March", "April", "May", "June"],
+                        //     datasets: [
+                        //         {
+                        //             data: [
+                        //                 Math.random() * 100,
+                        //                 Math.random() * 100,
+                        //                 Math.random() * 100,
+                        //                 Math.random() * 100,
+                        //                 Math.random() * 100,
+                        //                 Math.random() * 100
+                        //             ]
+                        //         }
+                        //     ]
+                        // }}
+                        width={Dimensions.get("window").width}
+                        height={220}
+                        yAxisLabel="$"
+                        yAxisSuffix="k"
+                        yAxisInterval={1}
+                        chartConfig={{
+                            backgroundColor: "#e26a00",
+                            backgroundGradientFrom: "#1E2923",
+                            backgroundGradientTo: "#08130D",
+                            decimalPlaces: 2,
+                            color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                            labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                            style: {
+                                borderRadius: 16
+                            },
+                            propsForDots: {
+                                r: "4",
+                                strokeWidth: "2",
+                                stroke: "#ffa726"
                             }
-                        ]
-                    }}
-                    width={Dimensions.get("window").width}
-                    height={220}
-                    yAxisLabel="$"
-                    yAxisSuffix="k"
-                    yAxisInterval={1}
-                    chartConfig={{
-                        backgroundColor: "#e26a00",
-                        backgroundGradientFrom: "#1E2923",
-                        backgroundGradientTo: "#08130D",
-                        decimalPlaces: 2,
-                        color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                        labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-                        style: {
-                            borderRadius: 16
-                        },
-                        propsForDots: {
-                            r: "4",
-                            strokeWidth: "2",
-                            stroke: "#ffa726"
-                        }
-                    }}
-                    bezier
-                    style={{
-                        marginVertical: 8,
-                        borderRadius: 16,
-                    }}
-                />
+                        }}
+                        bezier
+                        style={{
+                            marginVertical: 8,
+                            borderRadius: 16,
+                        }}
+                    />
 
-            </View>
+                </View>
             {/* } */}
         </View>
     );
