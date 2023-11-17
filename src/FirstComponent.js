@@ -6,6 +6,7 @@ import { Table, Row } from 'react-native-table-component';
 // import SQLite from 'react-native-sqlite-2';
 import * as SecureStore from 'expo-secure-store';
 
+
 export default function FirstComponent() {
 
     const labelsforChart = ["Jan", "Feb", "March", "April", "May", "June", "July", "August", "September", "November", "December"]
@@ -207,12 +208,13 @@ const viewStyles = StyleSheet.create({
     tableContainer: {
         marginTop: 10,
         margin: 5,
-
+        borderWidth : 1,
+        flexDirection : "column"
     },
     text: {
         fontWeight: 'bold',
         marginTop: 10,
-        marginLeft: 5
+        marginLeft: 5,
     },
     buttonStyle: {
         margin: 5,
