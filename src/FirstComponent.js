@@ -17,6 +17,7 @@ export default function FirstComponent() {
         datasets: [{ data: [] }]
     });
     const [showChart, setShowChart] = useState(false);
+    const [isdeleted,setIsdeleted] = useState(false);
 
     console.log("chartData==>", chartData.datasets[0])
     console.log("enteredData==>", enteredData)
@@ -74,7 +75,7 @@ export default function FirstComponent() {
     const _retrieveData = async () => {
         try {
             const value = await SecureStore.getItemAsync("enteredData");
-            console.log("value==>",value)
+            console.log("value==>", value)
             if (value !== null) {
                 setEnteredData(JSON.parse(value));
             }
@@ -88,23 +89,25 @@ export default function FirstComponent() {
             await SecureStore.deleteItemAsync("enteredData");
             console.log("Data deleted successfully")
             _retrieveData()
-        }catch (error) {
-            console.log("Error deleting data",error)
+        } catch (error) {
+            console.log("Error deleting data", error)
         }
     }
 
     return (
         <View style={viewStyles.container} >
-            <TextInput
-                // className="border-2"
-                style={viewStyles.textInput}
-                value={userInput}
-                onChangeText={handleInputChange}
-                onSubmitEditing={handleSubmit}
-                keyboardType="numeric"
-                blurOnSubmit={false}
-                placeholder="Enter Numeric Data"
-            />
+            {chartData.datasets[0].data.length < 6  &&
+                <TextInput
+                    // className="border-2"
+                    style={viewStyles.textInput}
+                    value={userInput}
+                    onChangeText={handleInputChange}
+                    onSubmitEditing={handleSubmit}
+                    keyboardType="numeric"
+                    blurOnSubmit={false}
+                    placeholder="Enter Numeric Data"
+                /> 
+            } 
             {enteredData.length > 0 && (
                 <View style={viewStyles.tableContainer}>
                     {renderTable()}
@@ -116,8 +119,8 @@ export default function FirstComponent() {
                 // onPress={() => { handlePlotGraph(); setShowChart(true) }}
                 />
             )}
-            {/* <Button style={viewStyles.button} title="get Data" onPress={_retrieveData} /> */}
-            {/* <Button style={viewStyles.button} title="delete data" onPress={_deleteData} /> */}
+            {/* <Button style={viewStyles.buttonStyle} title="get Data" onPress={_retrieveData} /> */}
+            {/* <Button style={viewStyles.buttonStyle} title="delete data" onPress={() => {_deleteData() ; setIsdeleted(true)}} /> */}
             {/* <Button title="Delete Data" onPress={() => {_deleteData}}/> */}
 
             {showChart &&
@@ -204,13 +207,14 @@ const viewStyles = StyleSheet.create({
     tableContainer: {
         marginTop: 10,
         margin: 5,
+
     },
     text: {
         fontWeight: 'bold',
         marginTop: 10,
         marginLeft: 5
     },
-    button: {
+    buttonStyle: {
         margin: 5,
     }
 });
