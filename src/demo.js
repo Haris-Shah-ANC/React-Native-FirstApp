@@ -1,14 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, Dimensions, TextInput, Button, StyleSheet } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Table, Row } from 'react-native-table-component';
-// import SQLite from 'react-native-sqlite-2';
 import * as SecureStore from 'expo-secure-store';
+import { Table, Row } from 'react-native-table-component';
 
 export default function FirstComponent() {
-
-    const labelsforChart = ["Jan", "Feb", "March", "April", "May", "June", "July", "August", "September", "November", "December"]
+    const labelsforChart = ["Jan", "Feb", "March", "April", "May", "June", "July", "August", "September", "November", "December"];
 
     const [userInput, setUserInput] = useState("");
     const [enteredData, setEnteredData] = useState([]);
@@ -18,18 +15,17 @@ export default function FirstComponent() {
     });
     const [showChart, setShowChart] = useState(false);
 
-    console.log("chartData==>", chartData.datasets[0])
-    console.log("enteredData==>", enteredData)
-
     useEffect(() => {
         _retrieveData();
     }, []);
 
     useEffect(() => {
+        // Update chartData whenever enteredData changes
         setChartData({
             labels: enteredData.map((entry, index) => labelsforChart[index]),
             datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
         });
+
         // Save enteredData to SecureStore whenever it changes
         _storeData();
     }, [enteredData]);
@@ -44,6 +40,7 @@ export default function FirstComponent() {
         if (!userInput.trim()) {
             return;
         }
+        // Update enteredData and clear userInput
         setEnteredData([...enteredData, userInput]);
         setUserInput("");
     };
@@ -74,7 +71,6 @@ export default function FirstComponent() {
     const _retrieveData = async () => {
         try {
             const value = await SecureStore.getItemAsync("enteredData");
-            console.log("value==>",value)
             if (value !== null) {
                 setEnteredData(JSON.parse(value));
             }
@@ -83,20 +79,9 @@ export default function FirstComponent() {
         }
     };
 
-    const _deleteData = async () => {
-        try {
-            await SecureStore.deleteItemAsync("enteredData");
-            console.log("Data deleted successfully")
-            _retrieveData()
-        }catch (error) {
-            console.log("Error deleting data",error)
-        }
-    }
-
     return (
-        <View style={viewStyles.container} >
+        <View style={viewStyles.container}>
             <TextInput
-                // className="border-2"
                 style={viewStyles.textInput}
                 value={userInput}
                 onChangeText={handleInputChange}
@@ -111,36 +96,15 @@ export default function FirstComponent() {
                 </View>
             )}
             {enteredData.length > 0 && (
-                <Button title="Plot Graph"
-                    onPress={handlePlotGraph}
-                // onPress={() => { handlePlotGraph(); setShowChart(true) }}
-                />
+                <Button title="Plot Graph" onPress={handlePlotGraph} />
             )}
-            {/* <Button style={viewStyles.button} title="get Data" onPress={_retrieveData} /> */}
-            {/* <Button style={viewStyles.button} title="delete data" onPress={_deleteData} /> */}
-            {/* <Button title="Delete Data" onPress={() => {_deleteData}}/> */}
+            <Button style={viewStyles.button} title="get Data" onPress={_retrieveData} />
 
-            {showChart &&
-
+            {showChart && (
                 <View>
                     <Text style={viewStyles.text}>Line Chart</Text>
                     <LineChart
                         data={chartData}
-                        // data={{
-                        //     labels: ["January", "February", "March", "April", "May", "June"],
-                        //     datasets: [
-                        //         {
-                        //             data: [
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100
-                        //             ]
-                        //         }
-                        //     ]
-                        // }}
                         width={Dimensions.get("window").width}
                         height={220}
                         yAxisLabel="$"
@@ -168,22 +132,11 @@ export default function FirstComponent() {
                             borderRadius: 16,
                         }}
                     />
-
                 </View>
-            }
+            )}
         </View>
     );
 }
-
-// const handlePlotGraph = () => {
-//     if (enteredData.length > 0) {
-
-//         setChartData({
-//             labels: enteredData.map((entry, index) => labelsforChart[index]),
-//             datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
-//         });
-//     }
-// };
 
 const viewStyles = StyleSheet.create({
     container: {
