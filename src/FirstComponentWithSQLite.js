@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Dimensions, TextInput, Button, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, Dimensions, TextInput, Button, StyleSheet } from "react-native";
 import { LineChart } from "react-native-chart-kit";
-// import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Table, Row } from 'react-native-table-component';
-// import SQLite from 'react-native-sqlite-2';
-import * as SecureStore from 'expo-secure-store';
+import SQLite from 'react-native-sqlite-storage';
 
+const db = SQLite.openDatabase({ name: "myDatabase.db", location: "default" });
 
-export default function FirstComponent() {
+export default function FirstComponentWithSQLite() {
 
     const labelsforChart = ["Jan", "Feb", "March", "April", "May", "June", "July", "August", "September", "November", "December"]
 
@@ -18,15 +17,13 @@ export default function FirstComponent() {
         datasets: [{ data: [] }]
     });
     const [showChart, setShowChart] = useState(false);
-    const [isdeleted, setIsdeleted] = useState(false);
 
     console.log("chartData==>", chartData.datasets[0])
     console.log("enteredData==>", enteredData)
 
-
-   
     useEffect(() => {
-        _retrieveData();
+        createTable();
+        retrieveData();
     }, []);
 
     useEffect(() => {
@@ -34,9 +31,40 @@ export default function FirstComponent() {
             labels: enteredData.map((entry, index) => labelsforChart[index]),
             datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
         });
-        // Save enteredData to SecureStore whenever it changes
-        _storeData();
+        saveData();
     }, [enteredData]);
+
+    const createTable = () => {
+        db.transaction(tx => {
+            tx.executeSql(
+                "CREATE TABLE IF NOT EXISTS UserData (id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT);"
+            );
+        });
+    };
+
+    const saveData = () => {
+        db.transaction(tx => {
+            tx.executeSql(
+                "INSERT INTO UserData (data) VALUES (?);",
+                [JSON.stringify(enteredData)]
+            );
+        });
+    };
+
+    const retrieveData = () => {
+        db.transaction(tx => {
+            tx.executeSql(
+                "SELECT * FROM UserData ORDER BY id DESC LIMIT 1;",
+                [],
+                (_, { rows }) => {
+                    if (rows.length > 0) {
+                        const lastEntry = rows.item(0).data;
+                        setEnteredData(JSON.parse(lastEntry));
+                    }
+                }
+            );
+        });
+    };
 
     const handleInputChange = (text) => {
         if (!isNaN(text)) {
@@ -67,43 +95,10 @@ export default function FirstComponent() {
         );
     };
 
-    const _storeData = async () => {
-        try {
-            await SecureStore.setItemAsync("enteredData", JSON.stringify(enteredData));
-        } catch (error) {
-            console.log("Error Saving Data", error);
-        }
-    };
-
-    const _retrieveData = async () => {
-        try {
-            const value = await SecureStore.getItemAsync("enteredData");
-            console.log("value==>", value)
-            if (value !== null) {
-                setEnteredData(JSON.parse(value));
-            }
-        } catch (error) {
-            console.log("Error retrieving data", error);
-        }
-    };
-
-    // const _deleteData = async () => {
-    //     try {
-    //         await SecureStore.deleteItemAsync("enteredData");
-    //         console.log("Data deleted successfully")
-    //         _retrieveData()
-    //     } catch (error) {
-    //         console.log("Error deleting data", error)
-    //     }
-    // }
-
     return (
-        // <ScrollView horizontal={true} style={viewStyles.container}>
-
-        <View style={viewStyles.innerContainer} >
+        <View style={viewStyles.innerContainer}>
             {chartData.datasets[0].data.length < 6 &&
                 <TextInput
-                    // className="border-2"
                     style={viewStyles.textInput}
                     value={userInput}
                     onChangeText={handleInputChange}
@@ -119,35 +114,16 @@ export default function FirstComponent() {
                 </View>
             )}
             {enteredData.length > 0 && (
-                <Button title="Plot Graph"
+                <Button
+                    title="Plot Graph"
                     onPress={handlePlotGraph}
-                // onPress={() => { handlePlotGraph(); setShowChart(true) }}
                 />
             )}
-            {/* <Button style={viewStyles.buttonStyle} title="get Data" onPress={_retrieveData} /> */}
-            {/* <Button style={viewStyles.buttonStyle} title="delete data" onPress={() => {_deleteData() ; setIsdeleted(true)}} /> */}
-            {/* <Button title="Delete Data" onPress={() => {_deleteData}}/> */}
-
             {showChart &&
                 <View>
                     <Text style={viewStyles.text}>Line Chart</Text>
                     <LineChart
                         data={chartData}
-                        // data={{
-                        //     labels: ["January", "February", "March", "April", "May", "June"],
-                        //     datasets: [
-                        //         {
-                        //             data: [
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100,
-                        //                 Math.random() * 100
-                        //             ]
-                        //         }
-                        //     ]
-                        // }}
                         width={Dimensions.get("window").width}
                         height={220}
                         yAxisLabel="$"
@@ -175,30 +151,13 @@ export default function FirstComponent() {
                             borderRadius: 16,
                         }}
                     />
-
                 </View>
             }
         </View>
-        // </ScrollView>
-
     );
 }
 
-// const handlePlotGraph = () => {
-//     if (enteredData.length > 0) {
-
-//         setChartData({
-//             labels: enteredData.map((entry, index) => labelsforChart[index]),
-//             datasets: [{ data: enteredData.map(entry => parseFloat(entry)) }]
-//         });
-//     }
-// };
-
 const viewStyles = StyleSheet.create({
-    // container: {
-    //     flex: 1,
-    //     flexDirection: 'row',
-    // },
     innerContainer: {
         width: "100%",
         backgroundColor: '#fafafa',
@@ -225,7 +184,4 @@ const viewStyles = StyleSheet.create({
         marginTop: 10,
         marginLeft: 5,
     },
-    buttonStyle: {
-        margin: 5,
-    }
 });
