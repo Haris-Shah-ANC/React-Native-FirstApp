@@ -1,8 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 // import FirstComponent from './src/FirstComponent';
-import LinkWithSQLite from './src/LInkWithSQLite';
-import FirstComponentWithSQLite from './src/FirstComponentWithSQLite';
+// import LinkWithSQLite from './src/LInkWithSQLite';
+// import FirstComponentWithSQLite from './src/FirstComponentWithSQLite';
+import FirstComponent from './src/FirstComponent';
 
 export default function App() {
 
@@ -10,11 +11,10 @@ export default function App() {
   console.log("Hermes enabled: ",isHermes())
   return (
     <View style={styles.container}>
-      <LinkWithSQLite />
+      {/* <LinkWithSQLite /> */}
       {/* <FirstComponentWithSQLite/> */}
-      <Text>Open up App.js to start working on your app!</Text>
-      
-      {/* <FirstComponent /> */}
+      <FirstComponent/>
+      {/* <Text>Open up App.js to start working on your app!</Text> */}
       {/* <StatusBar style="auto" /> */}
     </View>
   );
